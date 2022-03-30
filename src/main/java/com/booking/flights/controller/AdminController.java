@@ -19,6 +19,8 @@ import com.booking.flights.service.UserService;
 @RestController
 @RequestMapping("/admin")
 public class AdminController {
+
+
 	
 	@Autowired
 	private UserService userService;
@@ -41,5 +43,5 @@ public class AdminController {
 	}
 
 	//test3333
-
+//testtttt
 }
