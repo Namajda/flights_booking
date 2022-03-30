@@ -40,5 +40,6 @@ public class AdminController {
 	return applicationService.approveRejectFlight(applicationId, stato, note);
 	}
 
+	//test
 
 }
