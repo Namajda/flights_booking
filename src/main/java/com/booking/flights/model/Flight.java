@@ -2,14 +2,7 @@
 
 import java.util.Date;
 import java.util.Set;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.JoinTable;
-import javax.persistence.ManyToMany;
-import javax.persistence.Table;
+
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
@@ -47,5 +40,12 @@ public class Flight {
 	@NotNull(message = "Class type field must not be empty")
 	@Enumerated(EnumType.STRING)
     private ClassType  classType;
+	
+//	@OneToMany(
+//	        mappedBy = "flight",
+//	        cascade = CascadeType.ALL,
+//	        orphanRemoval = true
+//	    )
+//	private Set<Application> application;
 	
 }

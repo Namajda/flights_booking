@@ -9,6 +9,9 @@ import org.hibernate.validator.constraints.Length;
 
 import javax.persistence.*;
 import javax.validation.constraints.Email;
+
+import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 @Entity
@@ -38,5 +41,20 @@ public class User{
 
     @Enumerated(EnumType.STRING)
     private Roles role;
+    
+    //this create an unfinitive cycle
+    
+    @JsonIgnore
+    @OneToMany(
+	        mappedBy = "user",
+	        cascade = CascadeType.ALL,
+	        orphanRemoval = true
+	    )
+	private Set<Application> application;
 
+
+
+	
+    
+  
 }

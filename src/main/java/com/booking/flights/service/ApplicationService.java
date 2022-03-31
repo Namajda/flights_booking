@@ -79,4 +79,16 @@ public class ApplicationService {
 
 	}
 
+	//supervisor is also a user
+	
+	public Application bookFlight(Application application)  {
+		
+		Optional<User> user = userRepository.findById(application.getUser().getUserId());
+		
+		Optional<Flight> flight =  Optional.ofNullable(flightRepository.findById(application.getFlight().getFlightId()).get());
+		if(user.isPresent())	
+		applicationRepository.save(application);
+		return application;
+	}
+
 }

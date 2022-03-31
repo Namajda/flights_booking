@@ -7,6 +7,8 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
+import javax.validation.constraints.NotNull;
+
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -23,10 +25,12 @@ public class Application {
     private  Long applicationId;
 	
 	@ManyToOne
+	@NotNull(message = "User must not be empty")
     @JoinColumn(name = "userId")
     private User user;
     
 	@ManyToOne
+	@NotNull(message = "Flight must not be empty")
 	@JoinColumn(name = "flightId")
     private Flight flight ;
     
