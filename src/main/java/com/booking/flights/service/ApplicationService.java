@@ -159,17 +159,29 @@ public class ApplicationService {
 			return null;
 	}
 
-	// supervisor is also a user
-
 	public Application bookFlight(Application application) {
 
 		Optional<User> user = userRepository.findById(application.getUser().getUserId());
 
 		Optional<Flight> flight = flightRepository.findById(application.getFlight().getFlightId());
-		if (user.isPresent() && flight.isPresent()) {
+
+		Calendar calendar = Calendar.getInstance();
+		calendar.setTime(flight.get().getDepartureTime());
+		Integer year = calendar.get(Calendar.YEAR);
+		
+		List<Application> alreadyExcistingApplication = applicationRepository
+				.findBookedApplication(application.getUser().getUserId(), application.getFlight().getFlightId());
+		if (!alreadyExcistingApplication.isEmpty()) {
+			log.error("There does already excist an application for this flight: "
+					+ application.getFlight().getDeparture() + " - " + application.getFlight().getDestination());
+			
+		 return null;
+		} else if (user.isPresent() && flight.isPresent() && this.findRemainingFlights(year).getRemainingFlights() < 21) {
 			applicationRepository.save(application);
 			log.info("Flight booked successfully");
-		}
+		} else
+			log.info("Flight can not be booked");
+
 		return application;
 	}
 

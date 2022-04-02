@@ -46,6 +46,9 @@ public class FlightService {
     }
 
     public Flight createFlight(Flight flight){
+//    	List<Flight> excistingFlight = flightRepository.
+//    			findAlreadyExcistingFlight(flight.getDeparture(),flight.getDestination(),flight.getDepartureTime(), flight.getClassType());
+    	
      
         return flightRepository.save(flight);
     }

@@ -29,11 +29,6 @@ public class FlightController {
 	@Autowired
     private FlightService flightService;
 	
-	
-	
-	
-	
-	
 	@GetMapping("/all")
     public Page<Flight> getAllFlights(@RequestParam(defaultValue = "0") int page,
                                       @RequestParam(defaultValue = "5") int size,

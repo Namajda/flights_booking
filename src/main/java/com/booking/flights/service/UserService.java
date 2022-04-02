@@ -49,6 +49,12 @@ public class UserService {
 	private EntityManager em;
 
 	public User createUser(User user) {
+		
+		List<User> alreadyExcistingUser = userRepository.findByUsernameOrEmail(user.getUsername(), user.getEmail());
+		if(!alreadyExcistingUser.isEmpty()) {
+			log.error("This username or email already excist. Please add another username or email for a new user.");
+		return null;
+		}
 		user.setPassword(passwordEncoder.encode(user.getPassword()));
 		log.info("User Created");
 		return userRepository.save(user);
@@ -65,7 +71,7 @@ public class UserService {
 	}
 
 	public String updatePassword(User user) {
-		// this is because a hibernate exception
+		// this is because of a hibernate exception
 		Set<Application> applicationSet = new HashSet<>();
 		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 
@@ -92,17 +98,19 @@ public class UserService {
 	public User updateUser(User user) {
 		// by id get the saved user in db//check if this id is Present
 		Optional<User> savedUser = userRepository.findById(user.getUserId());
-		if (!(savedUser.get().getUsername().equals(user.getUsername()))) {
+		Set<Application> applicationSet = new HashSet<>();
+		if (!(savedUser.get().getUsername().equals(user.getUsername())) || !(savedUser.get().getEmail().equals(user.getEmail())) ) {
 			// check if the username that we want to set is in any other row in db
-			User userCheck = userRepository.findByUsername(user.getUsername());
-			if (userCheck != null) {
-				log.error("This username is used before.");
+			List<User> userCheck = userRepository.findByUsernameOrEmail(user.getUsername(), user.getEmail());
+			if (!userCheck.isEmpty()) {
+				log.error("This username or email is used before.");
 			} else {
-				user.setPassword(passwordEncoder.encode(user.getPassword()));// do not change pass
+				user.setPassword(user.getPassword());// do not change pass
 				userRepository.save(user);
 			}
 		} else {
-			user.setPassword(passwordEncoder.encode(user.getPassword()));
+			user.setPassword(user.getPassword());
+			user.setApplication(applicationSet);
 			userRepository.save(user);
 		}
 		return user;
@@ -110,13 +118,6 @@ public class UserService {
 
 	public User deleteUser(Long id) throws NotFoundException {
 		User user = userRepository.findById(id).orElseThrow(() -> new NotFoundException());
-
-		List<Application> applicationList = applicationRepository.findByUserId(user.getUserId());
-		if (!applicationList.isEmpty()) {
-			for (Application a : applicationList) {
-				applicationRepository.delete(a);
-			}
-		}
 		userRepository.delete(user);
 		return null;
 	}

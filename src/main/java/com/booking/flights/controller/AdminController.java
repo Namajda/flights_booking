@@ -37,12 +37,6 @@ public class AdminController {
 	return userService.findAllUsers();
 	}
 	
-
-//i have taken all the cases that a supervisor is also a user, so 
-// a user can add, update, delete a supervisor
-// if not i have to check the role of the user and see if it is a "USER",
-//than modify, if not i continue without making any modifications
-	
 	@PostMapping("/supervisor-add-user")
     public User addUser(@RequestBody User user) {
         return userService.createUser(user);
