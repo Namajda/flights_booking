@@ -1,6 +1,7 @@
 package com.booking.flights.service;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -62,7 +63,7 @@ public class ApplicationService {
 				log.error("There does already excist an application for this flight: "
 						+ application.getFlight().getDeparture() + " - " + application.getFlight().getDestination());
 				continue;
-				//return null;
+				// return null;
 			}
 			list.add(application);
 		}
@@ -74,8 +75,8 @@ public class ApplicationService {
 		String username = userService.getLoggedInUser();
 		User u = userRepository.findByUsername(username);
 		Long userId = u.getUserId();
-		// here is the list of application of user
-		List<Application> lista = applicationRepository.findByUserId(userId);
+		// here is the list of application of user, all accepted flight requests
+		List<Application> lista = applicationRepository.findByUserIdAndStatus(userId);
 
 		List<Integer> i = new ArrayList<>();
 
@@ -85,36 +86,65 @@ public class ApplicationService {
 		List<Flight> flights = flightRepository.findFlightByYearAndId(year, i);
 
 		RemainingFlightsDto remaining = new RemainingFlightsDto();
-		remaining
-				.setRemainingFlights(20 - applicationRepository.findByUserIdAndStatusActiveApplications(userId).size());
+		remaining.setRemainingFlights(20 - flights.size());
 		remaining.setFlights(flights);
 		return remaining;
 	}
 
-	public Application approveRejectFlight(Long applicationId, Integer stato, String note) throws NotFoundException {
+	public List<Flight> findBookedFlights() {
+		Long id = userRepository.findByUsername(userService.getLoggedInUser()).getUserId();
+
+		List<Application> lista = applicationRepository.findByUserIdAndStatus(id);
+		List<Integer> i = new ArrayList<>();
+
+		for (Application a : lista) {
+			i.add(a.getFlight().getFlightId().intValue());
+		}
+		List<Flight> flights = flightRepository.findFlightById(i);
+		return flights;
+	}
+
+	public String approveRejectFlight(Long applicationId, Integer status, String note) throws NotFoundException {
 		Application application = applicationRepository.findById(applicationId)
 				.orElseThrow(() -> new NotFoundException());
 
-		if (stato.equals(1) && application.getStatus().equals(1))
+		Optional<Flight> flight = flightRepository.findById(application.getFlight().getFlightId());
+
+		Calendar calendar = Calendar.getInstance();
+		calendar.setTime(flight.get().getDepartureTime());
+		Integer year = calendar.get(Calendar.YEAR);
+
+		if (status.equals(1) && application.getStatus().equals(1)) {
 			log.info("The application is already validated");
-		else if (stato.equals(-1) && application.getStatus().equals(-1))
+			return "The application is already validated";
+		} else if (status.equals(-1) && application.getStatus().equals(-1)) {
 			log.info("The application is already rejected");
-		else if (stato.equals(0) && application.getStatus().equals(0))
+			return "The application is already rejected";
+		} else if (status.equals(0) && application.getStatus().equals(0)) {
 			log.info("The application is already waiting");
-
-		else if (stato.equals(-1) && !note.isEmpty()) {
-			application.setStatus(stato);
-			log.error("Insert a note for rejecting the application");
+			return "The application is already waiting";
+		} else if (status.equals(-1)) {
+			application.setStatus(status);
+			if (note.isEmpty()) {
+				log.error("Insert a note for rejecting the application");
+				return "Insert a note for rejecting the application";
+			}
 			application.setNote(note);
 			applicationRepository.save(application);
+			return "Application rejected";
 
-		} else if (stato.equals(1)) {
-			application.setStatus(stato);
+		} else if (status.equals(1)) {
+			application.setStatus(status);
 			application.setNote(note);
-
-			applicationRepository.save(application);
+			if (this.findRemainingFlights(year).getRemainingFlights() < 21) {
+				applicationRepository.save(application);
+				return "Application approved successfully";
+			} else {
+				return "Application is not approved because the number of exceeded fligts for year";
+			}
 		}
-		return application;
+
+		return null;
 	}
 
 	public Page<Application> findAllApplication(Pageable pageable) {

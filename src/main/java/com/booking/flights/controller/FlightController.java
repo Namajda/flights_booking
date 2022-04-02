@@ -32,11 +32,7 @@ public class FlightController {
 	
 	
 	
-	@GetMapping("/booked-flights")
-	public List<Flight> findBookedFlights() {
-		
-	return flightService.findBookedFlights();
-	}
+	
 	
 	@GetMapping("/all")
     public Page<Flight> getAllFlights(@RequestParam(defaultValue = "0") int page,

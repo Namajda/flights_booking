@@ -30,5 +30,8 @@ public interface ApplicationRepository extends JpaRepository<Application,Long>{
 	
 	@Query(value = "SELECT * FROM flights.application f where f.user_id=?1 and f.flight_id=?2 and f.status<>-1", nativeQuery = true 	)
 	List<Application> findExcistingApplication(Long userId, Long flightId);
+	
+	@Query(value = "SELECT * FROM flights.application f where f.user_id=?1 and f.flight_id=?2 and f.status=1", nativeQuery = true 	)
+	List<Application> findBookedApplication(Long userId, Long flightId);
 
 }

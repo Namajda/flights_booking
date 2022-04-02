@@ -35,19 +35,6 @@ public class FlightService {
 	@Autowired
 	private FlightRepository flightRepository;
 
-	public List<Flight> findBookedFlights() {
-		Long id= userRepository.findByUsername(userService.getLoggedInUser()).getUserId();
-		
-		List<Application> lista = applicationRepository.findByUserIdAndStatus(id);
-		List<Integer> i = new ArrayList<>();
-
-		for (Application a : lista) {
-			i.add(a.getFlight().getFlightId().intValue());
-		}
-		List<Flight> flights = flightRepository.findFlightById(i);
-		return flights;
-	}
-
 		
 	public Page<Flight> getAllFlights(Pageable pageable){
         User loggedUser = userRepository.findByUsername(SecurityContextHolder.getContext().getAuthentication().getName());

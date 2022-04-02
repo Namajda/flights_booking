@@ -37,13 +37,6 @@ public class AdminController {
 	return userService.findAllUsers();
 	}
 	
-	
-	@PutMapping("/approve-reject-flight")
-	public Application approveRejectFlight(@RequestParam(name="applicationId", required = true) Long applicationId,
-			@RequestParam(name="stato", required = true) Integer stato,
-			@RequestParam(name="note", required = false) String note)  throws NotFoundException {
-	return applicationService.approveRejectFlight(applicationId, stato, note);
-	}
 
 //i have taken all the cases that a supervisor is also a user, so 
 // a user can add, update, delete a supervisor
