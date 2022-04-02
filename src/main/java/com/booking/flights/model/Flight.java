@@ -3,6 +3,7 @@
 import java.util.Date;
 import java.util.Set;
 
+import javax.validation.constraints.Future;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
@@ -33,6 +34,7 @@ public class Flight {
 	@NotEmpty(message = "Destination field must not be empty")
     private String destination;
     
+	@Future
 	@NotNull(message = "Departure time field must not be empty")
 	//@JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "Europe/Rome")
     private Date departureTime;
@@ -41,11 +43,14 @@ public class Flight {
 	@Enumerated(EnumType.STRING)
     private ClassType  classType;
 	
-//	@OneToMany(
-//	        mappedBy = "flight",
-//	        cascade = CascadeType.ALL,
-//	        orphanRemoval = true
-//	    )
-//	private Set<Application> application;
+	
+	@JsonIgnore
+    @OneToMany(
+	        mappedBy = "flight",
+	        cascade = CascadeType.ALL,
+	        orphanRemoval = true
+	    )
+	private Set<Application> application;
+
 	
 }

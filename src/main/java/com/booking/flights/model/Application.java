@@ -7,6 +7,8 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 
 import lombok.Getter;
@@ -34,6 +36,8 @@ public class Application {
 	@JoinColumn(name = "flightId")
     private Flight flight ;
     
+	@Min(value = -1)
+    @Max(value = 1)
     private Integer status;
     
     private String note;

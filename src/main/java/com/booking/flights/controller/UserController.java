@@ -54,10 +54,7 @@ public class UserController {
 	
 	
 	
-	@PostMapping("/apply-flight")
-    public List<Application> applyFlights(@RequestParam(name="flightIds", required = true) List<Long> flightIds) {
-        return userService.applyFlights(flightIds);
-    }
+	
 	
 	
 

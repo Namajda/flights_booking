@@ -15,7 +15,7 @@ public class MainController {
 	UserDetailsServiceImpl userService;
 
 	@PostMapping("/login")
-	public String login(@RequestParam() String user,@RequestParam() String pass) {
+	public String login(@RequestParam() String user, @RequestParam() String pass) {
 	   UsernamePasswordAuthenticationToken authReq
 	     = new UsernamePasswordAuthenticationToken(user, pass);
 	   return authReq.getName();

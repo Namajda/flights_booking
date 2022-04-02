@@ -9,6 +9,7 @@ import org.hibernate.validator.constraints.Length;
 
 import javax.persistence.*;
 import javax.validation.constraints.Email;
+import javax.validation.constraints.NotEmpty;
 
 import java.util.List;
 import java.util.Objects;
@@ -27,22 +28,26 @@ public class User{
     private Long userId;
 
     @Length(min = 3, message = "Username must contain at least 3 characters")
+    //@NotEmpty(message = "Username must not be empty")
     @Column(unique=true)
     private String username;
     
+    
     private String firstName;
+    
     
     private String lastName;
 
+    
     @Email(message = "Not a well-formed email address")
     private String email;
     
+    @NotEmpty(message = "Password must not be empty")
     private String password;
 
+   
     @Enumerated(EnumType.STRING)
     private Roles role;
-    
-    //this create an unfinitive cycle
     
     @JsonIgnore
     @OneToMany(
@@ -51,10 +56,5 @@ public class User{
 	        orphanRemoval = true
 	    )
 	private Set<Application> application;
-
-
-
-	
-    
-  
+      
 }

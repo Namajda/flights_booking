@@ -1,5 +1,7 @@
 package com.booking.flights.service;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -12,6 +14,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException.NotFound;
 
+import com.booking.flights.dto.RemainingFlightsDto;
 import com.booking.flights.model.Application;
 import com.booking.flights.model.Flight;
 import com.booking.flights.model.Roles;
@@ -36,10 +39,62 @@ public class ApplicationService {
 	@Autowired
 	private FlightRepository flightRepository;
 
+	public List<Application> applyFlights(List<Long> flightIds) {
+
+		List<Application> list = new ArrayList<>();
+
+		for (Long i : flightIds) {
+			Application application = new Application();
+			application.setUser(userRepository.findByUsername(userService.getLoggedInUser()));
+			if (flightRepository.findById(i).isPresent()) {
+				application.setFlight(flightRepository.findById(i).get());
+			} else {
+				log.error("There does not excist a flight with this id:" + i);
+				return null;
+			}
+
+			application.setStatus(0);
+			application.setNote("Request");
+
+			List<Application> alreadyExcistingApplication = applicationRepository
+					.findAlreadyExcistingApplication(application.getUser().getUserId(), i);
+			if (!alreadyExcistingApplication.isEmpty()) {
+				log.error("There does already excist an application for this flight: "
+						+ application.getFlight().getDeparture() + " - " + application.getFlight().getDestination());
+				continue;
+				//return null;
+			}
+			list.add(application);
+		}
+
+		return applicationRepository.saveAll(list);
+	}
+
+	public RemainingFlightsDto findRemainingFlights(Integer year) {
+		String username = userService.getLoggedInUser();
+		User u = userRepository.findByUsername(username);
+		Long userId = u.getUserId();
+		// here is the list of application of user
+		List<Application> lista = applicationRepository.findByUserId(userId);
+
+		List<Integer> i = new ArrayList<>();
+
+		for (Application a : lista) {
+			i.add(a.getFlight().getFlightId().intValue());
+		}
+		List<Flight> flights = flightRepository.findFlightByYearAndId(year, i);
+
+		RemainingFlightsDto remaining = new RemainingFlightsDto();
+		remaining
+				.setRemainingFlights(20 - applicationRepository.findByUserIdAndStatusActiveApplications(userId).size());
+		remaining.setFlights(flights);
+		return remaining;
+	}
+
 	public Application approveRejectFlight(Long applicationId, Integer stato, String note) throws NotFoundException {
-		Application application = applicationRepository.findById(applicationId).orElseThrow(()-> new NotFoundException());
-		// Optional<Flight> flight=
-		// flightRepository.findById(application.get().getFlight().getFlightId());
+		Application application = applicationRepository.findById(applicationId)
+				.orElseThrow(() -> new NotFoundException());
+
 		if (stato.equals(1) && application.getStatus().equals(1))
 			log.info("The application is already validated");
 		else if (stato.equals(-1) && application.getStatus().equals(-1))
@@ -49,20 +104,16 @@ public class ApplicationService {
 
 		else if (stato.equals(-1) && !note.isEmpty()) {
 			application.setStatus(stato);
-				log.error("Insert a note for rejecting the application");
-				application.setNote(note);
-				applicationRepository.save(application);
-			
+			log.error("Insert a note for rejecting the application");
+			application.setNote(note);
+			applicationRepository.save(application);
+
 		} else if (stato.equals(1)) {
 			application.setStatus(stato);
 			application.setNote(note);
 
 			applicationRepository.save(application);
-
-			// flightRepository.save(flight.get());
-
 		}
-
 		return application;
 	}
 
@@ -76,19 +127,61 @@ public class ApplicationService {
 				return applicationRepository.findAllByUser(loggedUser, pageable);
 		} else
 			return null;
-
 	}
 
-	//supervisor is also a user
-	
-	public Application bookFlight(Application application)  {
-		
+	// supervisor is also a user
+
+	public Application bookFlight(Application application) {
+
 		Optional<User> user = userRepository.findById(application.getUser().getUserId());
-		
-		Optional<Flight> flight =  Optional.ofNullable(flightRepository.findById(application.getFlight().getFlightId()).get());
-		if(user.isPresent())	
-		applicationRepository.save(application);
+
+		Optional<Flight> flight = flightRepository.findById(application.getFlight().getFlightId());
+		if (user.isPresent() && flight.isPresent()) {
+			applicationRepository.save(application);
+			log.info("Flight booked successfully");
+		}
 		return application;
+	}
+
+	public Application createFlightRequest(Application application) {
+		User loggedUser = null;
+		Optional<User> user = userRepository.findById(application.getUser().getUserId());
+		Optional<Flight> flight = flightRepository.findById(application.getFlight().getFlightId());
+		List<Application> findExcistingApplication;
+
+		if (user.isPresent() && flight.isPresent()) {
+			loggedUser = userRepository.findByUsername(userService.getLoggedInUser());
+			if (loggedUser.getUserId().equals(application.getUser().getUserId())) {
+				findExcistingApplication = applicationRepository.findExcistingApplication(
+						application.getUser().getUserId(), application.getFlight().getFlightId());
+				if (!findExcistingApplication.isEmpty()) {
+					log.error("Flight request already excist");
+
+				} else {
+					applicationRepository.save(application);
+					log.info("Flight request created successfully");
+				}
+			} else
+				log.error("Flight request is not valid");
+		} else
+			log.error("Flight request is not valid");
+
+		return application;
+	}
+
+	public void cancelFlightRequest(Long applicationId) {
+		Optional<Application> application = applicationRepository.findById(applicationId);
+		User loggedUser = null;
+		if (application.isPresent()) {
+			loggedUser = userRepository.findByUsername(userService.getLoggedInUser());
+			if (loggedUser.getUserId().equals(application.get().getUser().getUserId())) {
+				applicationRepository.deleteById(applicationId);
+				log.info("Application deleted successfully");
+			} else
+				log.error("You can not delete this application");
+		} else
+			log.error("This application does not excist");
+
 	}
 
 }

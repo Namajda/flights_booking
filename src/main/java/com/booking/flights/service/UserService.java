@@ -20,8 +20,10 @@ import org.springframework.stereotype.Service;
 
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import javax.persistence.EntityManager;
 
@@ -43,7 +45,6 @@ public class UserService {
 	@Autowired
 	private PasswordEncoder passwordEncoder;
 
-	// @Qualifier("chronosEntityManagerFactory")
 	@Autowired
 	private EntityManager em;
 
@@ -64,11 +65,13 @@ public class UserService {
 	}
 
 	public String updatePassword(User user) {
+		// this is because a hibernate exception
+		Set<Application> applicationSet = new HashSet<>();
 		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-		System.out.println(auth.getName());
 
-		if (user.getUsername().equals(auth.getName())) {
+		if (List.copyOf(auth.getAuthorities()).get(0).toString().equals("ROLE_SUPERVISOR") || user.getUsername().equals(auth.getName())) {
 			user.setPassword(passwordEncoder.encode(user.getPassword()));
+			user.setApplication(applicationSet);
 			userRepository.save(user);
 			return "You updated the password";
 
@@ -85,21 +88,6 @@ public class UserService {
 //		return lista;
 //	}
 
-	public List<Application> applyFlights(List<Long> flightIds) {
-		List<Application> list = new ArrayList<>();
-
-		for (Long i : flightIds) {
-			Application application = new Application();
-			application.setUser(userRepository.findByUsername(this.getLoggedInUser()));
-			application.setFlight(flightRepository.findById(i).get());
-			application.setStatus(0);
-			application.setNote("Request");
-
-			list.add(application);
-		}
-
-		return applicationRepository.saveAll(list);
-	}
 
 	public User updateUser(User user) {
 		// by id get the saved user in db//check if this id is Present
@@ -109,33 +97,27 @@ public class UserService {
 			User userCheck = userRepository.findByUsername(user.getUsername());
 			if (userCheck != null) {
 				log.error("This username is used before.");
-
 			} else {
-				user.setPassword(passwordEncoder.encode(user.getPassword()));//do not change pass
+				user.setPassword(passwordEncoder.encode(user.getPassword()));// do not change pass
 				userRepository.save(user);
 			}
 		} else {
-
 			user.setPassword(passwordEncoder.encode(user.getPassword()));
 			userRepository.save(user);
 		}
-
 		return user;
-
 	}
 
 	public User deleteUser(Long id) throws NotFoundException {
-		User user = userRepository.findById(id).orElseThrow(()-> new NotFoundException());
-		
-		List<Application> applicationList= applicationRepository.findByUserId(user.getUserId());
-		if(!applicationList.isEmpty()) {
-			for(Application a:applicationList) {
+		User user = userRepository.findById(id).orElseThrow(() -> new NotFoundException());
+
+		List<Application> applicationList = applicationRepository.findByUserId(user.getUserId());
+		if (!applicationList.isEmpty()) {
+			for (Application a : applicationList) {
 				applicationRepository.delete(a);
-		}
+			}
 		}
 		userRepository.delete(user);
-		
-		
 		return null;
 	}
 

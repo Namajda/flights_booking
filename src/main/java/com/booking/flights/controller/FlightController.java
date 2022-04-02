@@ -14,7 +14,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.booking.flights.dto.FlightsDto;
 import com.booking.flights.dto.RemainingFlightsDto;
+import com.booking.flights.model.Application;
 import com.booking.flights.model.Flight;
 import com.booking.flights.model.User;
 import com.booking.flights.repository.UserRepository;
@@ -27,10 +29,8 @@ public class FlightController {
 	@Autowired
     private FlightService flightService;
 	
-	@GetMapping("/remaining-flights")
-	public RemainingFlightsDto findRemainingFlights(@RequestParam(name="year", required = true) Integer year) {
-	return flightService.findRemainingFlights(year);
-	}
+	
+	
 	
 	@GetMapping("/booked-flights")
 	public List<Flight> findBookedFlights() {
@@ -49,6 +49,12 @@ public class FlightController {
 	@PostMapping("/create")
     public Flight createFlight(@RequestBody Flight flight){
         return flightService.createFlight(flight);
+    }
+	
+	@GetMapping("/filter")
+    public List<FlightsDto> filterFlights(@RequestParam(name= "search", required=false) String search) {
+       
+        return flightService.filterFlights(search);
     }
 
 }

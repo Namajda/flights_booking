@@ -10,6 +10,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import com.booking.flights.dto.FlightsDto;
 import com.booking.flights.dto.RemainingFlightsDto;
 import com.booking.flights.model.Application;
 import com.booking.flights.model.Flight;
@@ -34,27 +35,6 @@ public class FlightService {
 	@Autowired
 	private FlightRepository flightRepository;
 
-	public RemainingFlightsDto findRemainingFlights(Integer year) {
-		String username = userService.getLoggedInUser();
-		User u = userRepository.findByUsername(username);
-		Long userId = u.getUserId();
-		// here is the list of application of user
-		List<Application> lista = applicationRepository.findByUserId(userId);
-		List<Integer> i = new ArrayList<>();
-
-		for (Application a : lista) {
-			i.add(a.getFlight().getFlightId().intValue());
-		}
-
-		List<Flight> flights = flightRepository.findFlightByYearAndId(year, i);
-
-		RemainingFlightsDto remaining = new RemainingFlightsDto();
-		remaining.setRemainingFlights(20 - flights.size());
-		remaining.setFlights(flights);
-
-		return remaining;
-	}
-
 	public List<Flight> findBookedFlights() {
 		Long id= userRepository.findByUsername(userService.getLoggedInUser()).getUserId();
 		
@@ -64,7 +44,6 @@ public class FlightService {
 		for (Application a : lista) {
 			i.add(a.getFlight().getFlightId().intValue());
 		}
-		
 		List<Flight> flights = flightRepository.findFlightById(i);
 		return flights;
 	}
@@ -80,8 +59,13 @@ public class FlightService {
     }
 
     public Flight createFlight(Flight flight){
-       
+     
         return flightRepository.save(flight);
     }
+
+	public List<FlightsDto> filterFlights(String search) {
+		List<FlightsDto> flights = flightRepository.filterAllFlights(search);
+		return flights;
+	}
 
 }
