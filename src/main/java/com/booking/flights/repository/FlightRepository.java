@@ -56,11 +56,4 @@ public interface FlightRepository extends JpaRepository<Flight,Long>{
 	@Query(value = "select * from flights.flight f where f.departure=?1  and f.destination=?2 and f.departure_time=?3", nativeQuery = true)
 	List<Flight> findExcistingFlight(String departure, String destination, Date departureTime);
 	
-//	@Query(value = "SELECT f.flight_id as flightId, f.departure as departure, f.destination as destination, \r\n"
-//			+ "	f.departure_time as departureTime \r\n "
-//			+ "	from flights.flight f \r\n"
-//			+ "	where \r\n"
-//			+ "	f.departure=?1  and f.destination=?2 and f.departure_time=?3", nativeQuery = true)
-//	List<FlightsDto> findExcistingFlight(String departure, String destination, Date departureTime);
-	
 }
