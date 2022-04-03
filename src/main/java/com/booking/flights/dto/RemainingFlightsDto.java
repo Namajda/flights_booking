@@ -12,6 +12,11 @@ import lombok.Setter;
 @Data
 public class RemainingFlightsDto implements Serializable {
 	
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+
 	protected Integer remainingFlights;
 	
 	protected List<Flight> flights;

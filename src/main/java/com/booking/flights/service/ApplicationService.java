@@ -2,10 +2,9 @@ package com.booking.flights.service;
 
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,10 +12,9 @@ import org.springframework.data.crossstore.ChangeSetPersister.NotFoundException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.HttpClientErrorException.NotFound;
-
 import com.booking.flights.dto.RemainingFlightsDto;
 import com.booking.flights.model.Application;
+import com.booking.flights.model.ClassType;
 import com.booking.flights.model.Flight;
 import com.booking.flights.model.Roles;
 import com.booking.flights.model.User;
@@ -40,35 +38,33 @@ public class ApplicationService {
 	@Autowired
 	private FlightRepository flightRepository;
 
-	public List<Application> applyFlights(List<Long> flightIds) {
+	public Application applyFlight(Long flightId, ClassType classType) {
+		Application application = new Application();
+		application.setUser(userRepository.findByUsername(userService.getLoggedInUser()));
 
-		List<Application> list = new ArrayList<>();
-
-		for (Long i : flightIds) {
-			Application application = new Application();
-			application.setUser(userRepository.findByUsername(userService.getLoggedInUser()));
-			if (flightRepository.findById(i).isPresent()) {
-				application.setFlight(flightRepository.findById(i).get());
-			} else {
-				log.error("There does not excist a flight with this id:" + i);
-				return null;
-			}
-
-			application.setStatus(0);
-			application.setNote("Request");
-
-			List<Application> alreadyExcistingApplication = applicationRepository
-					.findAlreadyExcistingApplication(application.getUser().getUserId(), i);
-			if (!alreadyExcistingApplication.isEmpty()) {
-				log.error("There does already excist an application for this flight: "
-						+ application.getFlight().getDeparture() + " - " + application.getFlight().getDestination());
-				continue;
-				// return null;
-			}
-			list.add(application);
+		if (flightRepository.findById(flightId).isPresent()) {
+			application.setFlight(flightRepository.findById(flightId).get());
+		} else if (flightRepository.findById(flightId).isPresent()
+				&& flightRepository.findById(flightId).get().getDepartureTime().before(new Date())) {
+			log.error("You can not add an application for a flight in the past");
+			return null;
+		} else {
+			log.error("There does not excist a flight with this id:" + flightId);
+			return null;
 		}
 
-		return applicationRepository.saveAll(list);
+		application.setClassType(classType);
+		application.setStatus(0);
+		application.setNote("Request");
+
+		List<Application> alreadyExcistingApplication = applicationRepository
+				.findAlreadyExcistingApplication(application.getUser().getUserId(), flightId);
+		if (!alreadyExcistingApplication.isEmpty()) {
+			log.error("There does already excist an application for this flight: "
+					+ application.getFlight().getDeparture() + " - " + application.getFlight().getDestination());
+			return null;
+		}
+		return applicationRepository.save(application);
 	}
 
 	public RemainingFlightsDto findRemainingFlights(Integer year) {
@@ -168,15 +164,16 @@ public class ApplicationService {
 		Calendar calendar = Calendar.getInstance();
 		calendar.setTime(flight.get().getDepartureTime());
 		Integer year = calendar.get(Calendar.YEAR);
-		
+
 		List<Application> alreadyExcistingApplication = applicationRepository
 				.findBookedApplication(application.getUser().getUserId(), application.getFlight().getFlightId());
 		if (!alreadyExcistingApplication.isEmpty()) {
 			log.error("There does already excist an application for this flight: "
 					+ application.getFlight().getDeparture() + " - " + application.getFlight().getDestination());
-			
-		 return null;
-		} else if (user.isPresent() && flight.isPresent() && this.findRemainingFlights(year).getRemainingFlights() < 21) {
+
+			return null;
+		} else if (user.isPresent() && flight.isPresent()
+				&& this.findRemainingFlights(year).getRemainingFlights() < 21) {
 			applicationRepository.save(application);
 			log.info("Flight booked successfully");
 		} else
@@ -185,7 +182,7 @@ public class ApplicationService {
 		return application;
 	}
 
-	public Application createFlightRequest(Application application) {
+	public Application addFlightRequest(Application application) {
 		User loggedUser = null;
 		Optional<User> user = userRepository.findById(application.getUser().getUserId());
 		Optional<Flight> flight = flightRepository.findById(application.getFlight().getFlightId());

@@ -35,7 +35,7 @@ public class ApplicationSecurityConfiguration extends WebSecurityConfigurerAdapt
                 .antMatchers("/admin/**").hasAnyRole("SUPERVISOR")
                 .antMatchers("/application/supervisor-book-flight").hasRole("SUPERVISOR")
                 .antMatchers("/application/approve-reject-flight").hasRole("SUPERVISOR")
-                .antMatchers("/flight/create").hasRole("SUPERVISOR")
+                .antMatchers("/flight/add-flight").hasRole("SUPERVISOR")
                 .antMatchers("/flight/**").hasAnyRole("SUPERVISOR", "USER")         
                 .and().logout()
                 .logoutSuccessUrl("/login")

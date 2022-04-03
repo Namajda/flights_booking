@@ -1,33 +1,19 @@
 package com.booking.flights.service;
 
-import com.booking.flights.exceptions.BusinessException;
 import com.booking.flights.model.Application;
-import com.booking.flights.model.Flight;
 import com.booking.flights.model.User;
-import com.booking.flights.repository.ApplicationRepository;
-import com.booking.flights.repository.FlightRepository;
 import com.booking.flights.repository.UserRepository;
-
 import lombok.extern.slf4j.Slf4j;
-
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.crossstore.ChangeSetPersister.NotFoundException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
-import java.text.ParseException;
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-
-import javax.persistence.EntityManager;
-
-import com.booking.flights.exceptions.RestErrorCodes;
 
 @Service
 @Slf4j
@@ -37,16 +23,7 @@ public class UserService {
 	private UserRepository userRepository;
 
 	@Autowired
-	private FlightRepository flightRepository;
-
-	@Autowired
-	private ApplicationRepository applicationRepository;
-
-	@Autowired
 	private PasswordEncoder passwordEncoder;
-
-	@Autowired
-	private EntityManager em;
 
 	public User createUser(User user) {
 		
@@ -88,12 +65,6 @@ public class UserService {
 		}
 		return "You cannot update the password";
 	}
-
-//	public List<Flight> findUserFlights(User user) {
-//		List<Flight> lista = flightRepository.findAllByUsers(user);
-//		return lista;
-//	}
-
 
 	public User updateUser(User user) {
 		// by id get the saved user in db//check if this id is Present

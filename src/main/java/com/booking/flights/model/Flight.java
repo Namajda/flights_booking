@@ -2,7 +2,6 @@
 
 import java.util.Date;
 import java.util.Set;
-
 import javax.validation.constraints.Future;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
@@ -36,12 +35,9 @@ public class Flight {
     
 	@Future
 	@NotNull(message = "Departure time field must not be empty")
-	//@JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "Europe/Rome")
+	@JsonFormat(pattern = "dd-MM-yyyy HH:mm:ss", timezone = "Europe/Rome")
     private Date departureTime;
 
-	
-	
-	
 	@JsonIgnore
     @OneToMany(
 	        mappedBy = "flight",
