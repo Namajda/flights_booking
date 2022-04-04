@@ -67,7 +67,7 @@ public class UserService {
 	}
 
 	public User updateUser(User user) {
-		// by id get the saved user in db//check if this id is Present
+		
 		Optional<User> savedUser = userRepository.findById(user.getUserId());
 		Set<Application> applicationSet = new HashSet<>();
 		if (!(savedUser.get().getUsername().equals(user.getUsername())) || !(savedUser.get().getEmail().equals(user.getEmail())) ) {
@@ -76,7 +76,7 @@ public class UserService {
 			if (!userCheck.isEmpty()) {
 				log.error("This username or email is used before.");
 			} else {
-				user.setPassword(user.getPassword());// do not change pass
+				user.setPassword(user.getPassword());
 				userRepository.save(user);
 			}
 		} else {

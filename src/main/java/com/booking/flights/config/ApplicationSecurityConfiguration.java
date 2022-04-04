@@ -30,7 +30,7 @@ public class ApplicationSecurityConfiguration extends WebSecurityConfigurerAdapt
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http.authorizeRequests()
-                .antMatchers("/login", "/user/add-user").permitAll()
+                .antMatchers("/login").permitAll()
                 .antMatchers("/user/**").hasAnyRole("USER","SUPERVISOR")
                 .antMatchers("/admin/**").hasAnyRole("SUPERVISOR")
                 .antMatchers("/application/supervisor-book-flight").hasRole("SUPERVISOR")
